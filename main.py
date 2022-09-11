@@ -4,6 +4,7 @@ import constants
 from character import Character
 from weapon import Weapon
 from items import Item
+from world import World
 
 pygame.init()
 
@@ -60,6 +61,15 @@ bow_image = scale_img(pygame.image.load(
 arrow_image = scale_img(pygame.image.load(
     "assets/images/weapons/arrow.png").convert_alpha(), constants.WEAPON_SCALE)
 
+# load tilemap images
+tile_list = []
+for x in range(constants.TILE_TYPES):
+    tile_image = pygame.image.load(
+        f"assets/images/tiles/{x}.png").convert_alpha()
+    tile_image = pygame.transform.scale(
+        tile_image, (constants.TILE_SIZE, constants.TILE_SIZE))
+    tile_list.append(tile_image)
+
 # load character images
 mob_animations = []
 mob_types = ["elf", "imp", "skeleton", "goblin",
@@ -110,7 +120,20 @@ def draw_info():
               constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
 
 
+world_data = [
+    [7, 7, 7, 7, 7],
+    [7, 0, 1, 2, 7],
+    [7, 3, 4, 5, 7],
+    [7, 6, 6, 6, 7],
+    [7, 7, 7, 7, 7],
+]
+
+world = World()
+world.process_data(world_data, tile_list)
+
 # damage text class
+
+
 class DamageText(pygame.sprite.Sprite):
     def __init__(self, x, y, damage, color):
         pygame.sprite.Sprite.__init__(self)
@@ -197,6 +220,7 @@ while run:
     item_group.update(player)
 
     # draw player on screen
+    world.draw(screen)
     for enemy in enemy_list:
         enemy.draw(screen)
     player.draw(screen)
