@@ -58,6 +58,10 @@ for x in range(4):
 red_potion = scale_img(pygame.image.load(
     "assets/images/items/potion_red.png").convert_alpha(), constants.POTION_SCALE)
 
+item_images = []
+item_images.append(coin_images)
+item_images.append(red_potion)
+
 
 # load weapon images
 bow_image = scale_img(pygame.image.load(
@@ -119,6 +123,10 @@ def draw_info():
         else:
             screen.blit(heart_empty, (10 + i * 50, 0))
 
+    # level
+    draw_text("LEVEL: " + str(level), font,
+              constants.WHITE, constants.SCREEN_WIDTH / 2, 15)
+
     # show score
     draw_text(f"X{player.score}", font,
               constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
@@ -138,7 +146,7 @@ with open(f"levels/level{level}_data.csv", newline="") as csvfile:
 
 
 world = World()
-world.process_data(world_data, tile_list)
+world.process_data(world_data, tile_list, item_images, mob_animations)
 
 # damage text class
 
@@ -165,17 +173,13 @@ class DamageText(pygame.sprite.Sprite):
 
 
 # create player
-player = Character(100, 400, 300, mob_animations, 0)
-
-# create enemy
-enemy = Character(300, 300, 100, mob_animations, 1)
-
+player = world.player
 # create player's weapon
 bow = Weapon(bow_image, arrow_image)
 
-# create empty enemy list
-enemy_list = []
-enemy_list.append(enemy)
+# extract enemies from world data
+enemy_list = world.character_list
+
 
 # create sprite groups
 damage_text_group = pygame.sprite.Group()
@@ -185,12 +189,9 @@ item_group = pygame.sprite.Group()
 
 score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
 item_group.add(score_coin)
-
-
-potion = Item(200, 200, 1, [red_potion])
-item_group.add(potion)
-coin = Item(400, 400, 0, coin_images)
-item_group.add(coin)
+# add the items from the level data
+for item in world.item_list:
+    item_group.add(item)
 
 # main game loop
 run = True
