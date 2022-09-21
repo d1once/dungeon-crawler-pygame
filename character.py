@@ -1,6 +1,6 @@
-from re import T
 import pygame
 import constants
+import weapon
 import math
 
 
@@ -19,6 +19,7 @@ class Character():
         self.alive = True
         self.hit = False
         self.last_hit = pygame.time.get_ticks()
+        self.last_attack = pygame.time.get_ticks()
         self.stunned = False
 
         self.image = self.animation_list[self.action][self.frame_index]
@@ -85,11 +86,12 @@ class Character():
 
         return screen_scroll
 
-    def ai(self, player, obstacle_tiles, screen_scroll):
+    def ai(self, player, obstacle_tiles, screen_scroll, fireball_image):
         clipped_line = ()
         stun_cooldown = 100
         ai_dx = 0
         ai_dy = 0
+        fireball = None
 
         # reposition the mobs based on screen scroll
         self.rect.x += screen_scroll[0]
@@ -125,6 +127,16 @@ class Character():
                         player.health -= 10
                         player.hit = True
                         player.last_hit = pygame.time.get_ticks()
+
+                    # boss enemy shoot fireballs
+                    fireball_cooldown = 700
+                    if self.boss:
+                        if dist < 500:
+                            if pygame.time.get_ticks() - self.last_attack >= fireball_cooldown:
+                                fireball = weapon.Fireball(
+                                    fireball_image, self.rect.centerx, self.rect.centery, player.rect.centerx, player.rect.centery)
+                                self.last_attack = pygame.time.get_ticks()
+
             # check if hit
             if self.hit == True:
                 self.hit = False
@@ -135,6 +147,8 @@ class Character():
 
             if (pygame.time.get_ticks() - self.last_hit > stun_cooldown):
                 self.stunned = False
+
+        return fireball
 
     def update(self):
 
@@ -182,5 +196,3 @@ class Character():
                          self.rect.y - constants.SCALE * constants.OFFSET))
         else:
             surface.blit(flipped_image, self.rect)
-
-        pygame.draw.rect(surface, constants.RED, self.rect, 1)
